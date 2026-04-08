@@ -27,7 +27,7 @@ type WSMessage = {
 
 // ─── Shared helpers ───────────────────────────────────────────────────────────
 
-const WS_BASE = (process.env.NEXT_PUBLIC_WS_URL ?? 'ws://localhost:8000')
+const WS_BASE = (process.env.NEXT_PUBLIC_WS_URL)
 
 function getToken() {
     return Cookies.get('access_token') ?? null
@@ -45,6 +45,7 @@ function createReconnectingWS(
 ): () => void {
     let retries = 0
     let closed  = false
+    let timer: ReturnType<typeof setTimeout> | null = null
 
     function connect() {
         if (closed) return
@@ -58,21 +59,24 @@ function createReconnectingWS(
         }
 
         ws.onclose = (e) => {
-            // 4001 = unauthenticated, 4003 = forbidden — don't retry
             if (closed || e.code === 4001 || e.code === 4003) return
             if (retries < maxRetries) {
                 retries++
-                setTimeout(connect, Math.min(1_000 * 2 ** retries, 30_000))
+                timer = setTimeout(connect, Math.min(1_000 * 2 ** retries, 30_000))
             }
         }
 
         ws.onerror = () => ws.close()
     }
 
-    connect()
+    // Small delay so React Strict Mode's fake unmount fires before we connect.
+    // In production this is negligible; in dev it prevents the "closed before
+    // connection established" noise.
+    timer = setTimeout(connect, 100)
 
     return () => {
         closed = true
+        if (timer) clearTimeout(timer)
         wsRef.current?.close()
         wsRef.current = null
     }
@@ -198,12 +202,20 @@ export type TypingState = {
 }
 
 export function useChatWS(roomId: string | null) {
-    const wsRef    = useRef<WebSocket | null>(null)
+    const wsRef      = useRef<WebSocket | null>(null)
+    const mountedRef = useRef(true)
     const [messages,  setMessages]  = useState<ChatMessage[]>([])
     const [typing,    setTyping]    = useState<TypingState | null>(null)
     const [connected, setConnected] = useState(false)
 
+    // Track mounted state to guard all setState calls
+    useEffect(() => {
+        mountedRef.current = true
+        return () => { mountedRef.current = false }
+    }, [])
+
     const handleMessage = useCallback((msg: WSMessage) => {
+        if (!mountedRef.current) return
         switch (msg.type) {
             case 'connection.established':
                 setConnected(true)
@@ -213,7 +225,7 @@ export function useChatWS(roomId: string | null) {
                 break
             case 'chat.typing':
                 setTyping(msg.payload as unknown as TypingState)
-                setTimeout(() => setTyping(null), 3000)
+                setTimeout(() => { if (mountedRef.current) setTyping(null) }, 3000)
                 break
         }
     }, [])
@@ -225,11 +237,7 @@ export function useChatWS(roomId: string | null) {
 
         const url = `${WS_BASE}/chat/${roomId}/?token=${token}`
         const cleanup = createReconnectingWS(url, handleMessage, wsRef)
-        return () => {
-            setConnected(false)
-            setMessages([])
-            cleanup()
-        }
+        return cleanup
     }, [roomId, handleMessage])
 
     const sendMessage = useCallback((message: string) => {

@@ -1,9 +1,9 @@
 'use client'
 
 import Link from 'next/link'
-import { useState, useEffect } from 'react'
+import { useState, useSyncExternalStore } from 'react'
 import { usePathname, useRouter } from 'next/navigation'
-import { ShoppingBag, Search, Bell, Menu, X, LogOut, Package, MapPin, Settings } from 'lucide-react'
+import { ShoppingBag, Search, Bell, Menu, X, Mail, LogOut, Package, MapPin, Settings } from 'lucide-react'
 import { cn, formatRelativeDate } from '@/lib/utils'
 import { useCartStore } from '@/store/cart'
 import { useAuthStore } from '@/store/auth'
@@ -14,7 +14,7 @@ import Cookies from 'js-cookie'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Input } from '@/components/ui/input'
-import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet'
+import { Sheet, SheetContent, SheetTrigger, SheetTitle, SheetDescription } from '@/components/ui/sheet'
 import {
     DropdownMenu, DropdownMenuContent, DropdownMenuItem,
     DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger,
@@ -30,9 +30,16 @@ const NAV_LINKS = [
 export function Navbar() {
     const pathname  = usePathname()
     const router    = useRouter()
-    const [mounted, setMounted]       = useState(false)
     const [search, setSearch]         = useState('')
     const [searchOpen, setSearchOpen] = useState(false)
+
+    // useSyncExternalStore is the correct pattern for SSR-safe client detection.
+    // Returns false during SSR/hydration, true on the client — no effect needed.
+    const mounted = useSyncExternalStore(
+        () => () => {},  // subscribe: nothing external to listen to
+        () => true,      // getSnapshot (client)
+        () => false,     // getServerSnapshot
+    )
 
     const itemCount  = useCartStore(s => s.itemCount())
     const toggleCart = useCartStore(s => s.toggleCart)
@@ -41,7 +48,6 @@ export function Navbar() {
     const markRead = useMarkNotificationRead()
     useNotificationsWS()
 
-    useEffect(() => { setMounted(true) }, [])
 
     const unread = notifData?.results.filter(n => !n.is_read).length ?? 0
 
@@ -157,7 +163,7 @@ export function Navbar() {
                             <DropdownMenu>
                                 <DropdownMenuTrigger asChild>
                                     <Button variant="ghost" className="gap-2 px-2">
-                                        <Avatar className="h-7 w-7">
+                                        <Avatar className="h-7 w-7 bg-blue-950">
                                             <AvatarFallback className="bg-gradient-to-br from-brand-400 to-brand-600 text-white text-xs">
                                                 {user?.first_name?.[0] ?? user?.email?.[0]?.toUpperCase() ?? 'U'}
                                             </AvatarFallback>
@@ -175,6 +181,11 @@ export function Navbar() {
                                     <DropdownMenuItem asChild>
                                         <Link href="/account/profile" className="flex items-center gap-2 cursor-pointer">
                                             <Settings className="h-4 w-4" /> Profile
+                                        </Link>
+                                    </DropdownMenuItem>
+                                    <DropdownMenuItem asChild>
+                                        <Link href="/account/chat" className="flex items-center gap-2 cursor-pointer">
+                                            <Mail className="h-4 w-4" /> Chat
                                         </Link>
                                     </DropdownMenuItem>
                                     <DropdownMenuItem asChild>
@@ -207,6 +218,8 @@ export function Navbar() {
                                 </Button>
                             </SheetTrigger>
                             <SheetContent side="left" className="w-72 p-0">
+                                <SheetTitle className="sr-only">Navigation menu</SheetTitle>
+                                <SheetDescription className="sr-only">Browse site navigation and search</SheetDescription>
                                 <div className="flex items-center gap-2 p-4 border-b">
                                     <div className="h-7 w-7 rounded-lg bg-gradient-to-br from-brand-500 to-brand-700 flex items-center justify-center">
                                         <ShoppingBag className="h-3.5 w-3.5 text-white" />

@@ -69,15 +69,64 @@ export interface Attribute {
     value: string
 }
 
+export interface ProductImage {
+    id: string
+    image_url: string | null
+    alt_text: string
+    is_primary: boolean
+    order: number
+}
+
+export type VideoType = 'upload' | 'youtube' | 'vimeo'
+
+export interface ProductVideo {
+    id: string
+    video_type: VideoType
+    thumbnail_url: string | null
+    playback_url: string | null
+    title: string
+    is_primary: boolean
+    order: number
+}
+
+// Variant-level media — same shape as product-level
+export interface VariantImage {
+    id: string
+    image_url: string | null
+    alt_text: string
+    is_primary: boolean
+    order: number
+}
+
+export interface VariantVideo {
+    id: string
+    video_type: VideoType
+    thumbnail_url: string | null
+    playback_url: string | null
+    title: string
+    is_primary: boolean
+    order: number
+}
+
+export interface MinimalProduct {
+    id: string
+    name: string
+    slug: number
+}
+
 export interface ProductVariant {
     id: string
-    product: string
+    product: MinimalProduct
     sku: string
     price: string
-    image_url: string
     is_active: boolean
     attributes: Attribute[]
     stock_quantity?: number
+    // Variant-level media (from VariantImage / VariantVideo models)
+    images: VariantImage[]
+    videos: VariantVideo[]
+    primary_image: VariantImage | null
+    primary_video: VariantVideo | null
 }
 
 export interface Product {
@@ -89,11 +138,11 @@ export interface Product {
     base_price: string
     is_active: boolean
     created_at: string
-    updated_at: string
     variants: ProductVariant[]
-    // computed helpers
-    min_price?: string
-    max_price?: string
+    images: ProductImage[]
+    videos: ProductVideo[]
+    primary_image: ProductImage | null
+    primary_video: ProductVideo | null
 }
 
 // ─── Cart ─────────────────────────────────────────────────────────────────────
@@ -244,7 +293,6 @@ export interface ApiError {
 
 export interface CheckoutPayload {
     address_id: string
-    shipping_method_id: string
     coupon_code?: string
     gateway: PaymentGateway
     cart_items: { variant: string; quantity: number }[]
@@ -255,4 +303,78 @@ export interface CheckoutResult {
     payment_url?: string        // PayPal approval URL
     client_secret?: string      // Stripe payment intent
     payment_intent_id?: string
+}
+
+// types/chat.ts
+// Mirrors apps/chat/models.py and serializers exactly
+
+export type ChatRoomStatus = 'open' | 'assigned' | 'resolved' | 'closed'
+export type ChatMessageType = 'text' | 'image' | 'file' | 'system'
+
+export interface ChatParticipant {
+    id: string
+    email: string
+    first_name: string
+    last_name: string
+    full_name: string
+}
+
+export interface ChatMessagePreview {
+    body: string
+    created_at: string
+    type: ChatMessageType
+}
+
+export interface ChatRoom {
+    id: string
+    customer: ChatParticipant
+    agent: ChatParticipant | null
+    order: string | null
+    subject: string
+    status: ChatRoomStatus
+    created_at: string
+    updated_at: string
+    latest_message: ChatMessagePreview | null
+    unread_count: number
+}
+
+export interface ChatMessage {
+    id: string
+    room: string
+    sender: ChatParticipant | null
+    message_type: ChatMessageType
+    body: string
+    file: string | null
+    is_read: boolean
+    created_at: string
+    is_own: boolean
+}
+
+// WebSocket payloads (from ChatConsumer send_json calls)
+export interface WSChatMessage {
+    id: string
+    sender_email: string | null
+    sender_name: string
+    message_type: ChatMessageType
+    body: string
+    created_at: string
+    is_own: boolean
+    is_read: boolean
+}
+
+export interface WSTypingPayload {
+    sender: string
+    is_typing: boolean
+}
+
+export interface WSJoinLeavePayload {
+    sender: string
+}
+
+export interface WSReadPayload {
+    reader: string
+}
+
+export interface WSHistoryPayload {
+    messages: WSChatMessage[]
 }

@@ -21,8 +21,8 @@ const schema = z.object({
     last_name:  z.string().min(1, 'Required'),
     email:      z.string().email('Valid email required'),
     password:   z.string().min(8, 'Min 8 characters'),
-    confirm_password: z.string(),
-}).refine(d => d.password === d.confirm_password, {
+    password2: z.string(),
+}).refine(d => d.password === d.password2, {
     message: 'Passwords must match',
     path: ['confirm_password'],
 })
@@ -38,7 +38,7 @@ export default function RegisterPage() {
         resolver: zodResolver(schema),
     })
 
-    const onSubmit = async ({ confirm_password, ...data }: FormData) => {
+    const onSubmit = async (data: FormData) => {
         setLoading(true)
         try {
             const res = await authService.register(data)
@@ -105,9 +105,9 @@ export default function RegisterPage() {
                             </div>
 
                             <div className="space-y-1.5">
-                                <Label htmlFor="confirm_password">Confirm password</Label>
-                                <Input id="confirm_password" {...register('confirm_password')} type="password" placeholder="Repeat password" />
-                                {errors.confirm_password && <p className="text-xs text-destructive">{errors.confirm_password.message}</p>}
+                                <Label htmlFor="password2">Confirm password</Label>
+                                <Input id="password2" {...register('password2')} type="password" placeholder="Repeat password" />
+                                {errors.password2 && <p className="text-xs text-destructive">{errors.password2.message}</p>}
                             </div>
 
                             <Button type="submit" className="w-full" size="lg" disabled={loading}>

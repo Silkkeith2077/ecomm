@@ -76,7 +76,7 @@ export default function CheckoutPage() {
 
         const payload: CheckoutPayload = {
             address_id:        selectedAddress,
-            shipping_method_id: selectedShipping,
+            // shipping_method_id: selectedShipping,
             coupon_code:       couponResult ? couponCode : undefined,
             gateway,
             cart_items: cart.items.map(i => ({ variant: i.variant.id, quantity: i.quantity })),
@@ -258,8 +258,8 @@ export default function CheckoutPage() {
                             {cart?.items.map(item => (
                                 <div key={item.id} className="flex items-center gap-3">
                                     <div className="h-10 w-10 rounded-lg bg-surface-100 shrink-0 overflow-hidden">
-                                        {item.variant.image_url && (
-                                            <img src={item.variant.image_url} alt="" className="h-full w-full object-cover" />
+                                        {item.variant.images?.[0]?.image_url && (
+                                            <img src={item.variant.images?.[0]?.image_url} alt="" className="h-full w-full object-cover" />
                                         )}
                                     </div>
                                     <div className="flex-1 min-w-0">

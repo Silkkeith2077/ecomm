@@ -3,7 +3,7 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { User, Package, MapPin, Shield, ChevronRight } from 'lucide-react'
+import { User, Package, Mail, MapPin, Shield, ChevronRight } from 'lucide-react'
 import { Navbar } from '@/components/layout/Navbar'
 import { CartDrawer } from '@/components/shop/CartDrawer'
 import { Footer } from '@/components/layout/Footer'
@@ -11,9 +11,11 @@ import { cn } from '@/lib/utils'
 
 const NAV_ITEMS = [
   { href: '/account/profile',   icon: User,     label: 'Profile' },
+    { href: '/account/chat',  icon: Mail,   label: 'Chat' },
   { href: '/account/orders',    icon: Package,  label: 'Orders' },
   { href: '/account/addresses', icon: MapPin,   label: 'Addresses' },
   { href: '/account/security',  icon: Shield,   label: 'Security' },
+
 ]
 
 export default function AccountLayout({ children }: { children: React.ReactNode }) {

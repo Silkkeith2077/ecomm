@@ -3,18 +3,26 @@
 import Link from 'next/link'
 import Image from 'next/image'
 import { ShoppingBag } from 'lucide-react'
-import { cn, formatPrice } from '@/lib/utils'
+import { cn, formatPrice, mediaUrl } from '@/lib/utils'
 import { useAddToCart } from '@/hooks/useApi'
 import type { Product } from '@/types'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Card, CardContent } from '@/components/ui/card'
 
-interface Props { product: Product; className?: string }
+interface Props { product: Product; className?: string; priority?: boolean }
 
-export function ProductCard({ product, className }: Props) {
+export function ProductCard({ product, className, priority = false }: Props) {
     const addToCart    = useAddToCart()
     const firstVariant = product.variants?.[0]
+
+    // Prefer product-level primary image, fall back to first image, then variant image
+    const displayImage = mediaUrl(
+        product.primary_image?.image_url ??
+        product.images?.[0]?.image_url ??
+        firstVariant?.primary_image?.image_url
+    )
+
     const displayPrice = firstVariant ? formatPrice(firstVariant.price) : formatPrice(product.base_price)
     const hasMultiplePrices = product.variants?.length > 1 &&
         product.variants.some(v => v.price !== product.variants[0].price)
@@ -23,8 +31,10 @@ export function ProductCard({ product, className }: Props) {
         <Card className={cn('group relative overflow-hidden transition-shadow hover:shadow-md', className)}>
             <Link href={`/shop/products/${product.slug}`} className="block">
                 <div className="aspect-square overflow-hidden bg-muted">
-                    {firstVariant?.image_url ? (
-                        <Image src={firstVariant.image_url} alt={product.name} width={400} height={400}
+                    {displayImage ? (
+                        <Image src={displayImage} alt={product.primary_image?.alt_text || product.name}
+                               width={400} height={400}
+                               priority={priority}
                                className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105" />
                     ) : (
                         <div className="h-full w-full flex items-center justify-center transition-transform duration-300 group-hover:scale-105">

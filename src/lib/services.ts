@@ -2,9 +2,10 @@
 // One service per Django app, matching the backend's URL patterns exactly.
 
 import { api, setTokens, clearTokens } from './api'
+import type { ChatRoom, ChatMessage } from '@/types'
 import type {
     User, Address, LoginResponse, RegisterResponse,
-    PaginatedResponse, Category, Product, ProductVariant,
+    Category, Product, ProductVariant, PaginatedResponse,
     Cart, CartItem, Order, Payment, ShippingMethod, Shipment,
     CouponValidationResult, Notification, CheckoutPayload, CheckoutResult,
 } from '@/types'
@@ -25,7 +26,7 @@ export const authService = {
     },
 
     async register(payload: {
-        email: string; password: string; first_name?: string; last_name?: string
+        email: string; password: string; password2: string; first_name?: string; last_name?: string
     }): Promise<RegisterResponse> {
         const { data } = await api.post<RegisterResponse>('/auth/register/', payload)
         setTokens(data.access, data.refresh)
@@ -210,5 +211,54 @@ export const notificationService = {
 
     async markAllRead(): Promise<void> {
         await api.post('/notifications/mark-all-read/')
+    },
+}
+
+// lib/chatService.ts
+// Follows the exact same pattern as services.ts
+
+
+
+export const chatService = {
+    // ── Rooms ──────────────────────────────────────────────────────────────────
+
+    async listRooms(params?: { status?: string }): Promise<PaginatedResponse<ChatRoom>> {
+        const { data } = await api.get<PaginatedResponse<ChatRoom>>('/chat/rooms/', { params })
+        return data
+    },
+
+    async getRoom(id: string): Promise<ChatRoom> {
+        const { data } = await api.get<ChatRoom>(`/chat/rooms/${id}/`)
+        return data
+    },
+
+    async createRoom(payload: { subject: string; order?: string }): Promise<ChatRoom> {
+        const { data } = await api.post<ChatRoom>('/chat/rooms/', payload)
+        return data
+    },
+
+    async resolveRoom(id: string): Promise<ChatRoom> {
+        const { data } = await api.post<ChatRoom>(`/chat/rooms/${id}/resolve/`)
+        return data
+    },
+
+    async assignAgent(id: string, agent_id: string): Promise<ChatRoom> {
+        const { data } = await api.post<ChatRoom>(`/chat/rooms/${id}/assign/`, { agent_id })
+        return data
+    },
+
+    // ── Messages ───────────────────────────────────────────────────────────────
+
+    async listMessages(roomId: string): Promise<ChatMessage[]> {
+        const { data } = await api.get<ChatMessage[]>(`/chat/rooms/${roomId}/messages/`)
+        return data
+    },
+
+    async sendMessage(roomId: string, body: string, message_type = 'text'): Promise<ChatMessage> {
+        const { data } = await api.post<ChatMessage>(`/chat/rooms/${roomId}/messages/`, {
+            body,
+            message_type,
+        })
+        return data
     },
 }

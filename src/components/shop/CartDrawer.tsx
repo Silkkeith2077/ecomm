@@ -2,16 +2,28 @@
 
 import Link from 'next/link'
 import Image from 'next/image'
+
 import { ShoppingBag, Trash2, Plus, Minus, ArrowRight } from 'lucide-react'
 import { useCartStore } from '@/store/cart'
 import { useCart, useUpdateCartItem, useRemoveCartItem } from '@/hooks/useApi'
-import { formatPrice, getVariantLabel } from '@/lib/utils'
-import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet'
+import { formatPrice, getVariantLabel, mediaUrl } from '@/lib/utils'
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription } from '@/components/ui/sheet'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Separator } from '@/components/ui/separator'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { Skeleton } from '@/components/ui/skeleton'
+
+import type { CartItem } from '@/types'
+
+function getCartItemImage(item: CartItem): string | null {
+    return (
+        item.variant.images?.find(img => img.is_primary)?.image_url ||
+        item.variant.product?.primary_image?.image_url ||
+        item.variant.product?.images?.[0]?.image_url ||
+        null
+    )
+}
 
 export function CartDrawer() {
     const { isOpen, closeCart } = useCartStore()
@@ -30,6 +42,9 @@ export function CartDrawer() {
                             <Badge variant="secondary">{cart.item_count}</Badge>
                         )}
                     </SheetTitle>
+                    <SheetDescription className="sr-only">
+                        Review and manage items in your shopping cart
+                    </SheetDescription>
                 </SheetHeader>
 
                 {/* Items */}
@@ -68,14 +83,17 @@ export function CartDrawer() {
                         {cart?.items.map(item => (
                             <div key={item.id} className="flex gap-3">
                                 <div className="h-20 w-20 shrink-0 rounded-xl overflow-hidden bg-muted">
-                                    {item.variant.image_url ? (
-                                        <Image src={item.variant.image_url} alt={item.variant.product?.name ?? ''}
-                                               width={80} height={80} className="h-full w-full object-cover" />
-                                    ) : (
-                                        <div className="h-full w-full flex items-center justify-center">
-                                            <ShoppingBag className="h-6 w-6 text-muted-foreground" />
-                                        </div>
-                                    )}
+                                    {(() => {
+                                        const img = getCartItemImage(item)
+                                        return img ? (
+                                            <Image src={mediaUrl(img)!} alt={item.variant.product?.name ?? ''}
+                                                   width={80} height={80} className="h-full w-full object-cover" />
+                                        ) : (
+                                            <div className="h-full w-full flex items-center justify-center">
+                                                <ShoppingBag className="h-6 w-6 text-muted-foreground" />
+                                            </div>
+                                        )
+                                    })()}
                                 </div>
                                 <div className="flex-1 min-w-0">
                                     <p className="text-sm font-medium truncate">{item.variant.product?.name}</p>
