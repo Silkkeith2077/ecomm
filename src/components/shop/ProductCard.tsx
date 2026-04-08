@@ -5,6 +5,7 @@ import Image from 'next/image'
 import { ShoppingBag } from 'lucide-react'
 import { cn, formatPrice, mediaUrl } from '@/lib/utils'
 import { useAddToCart } from '@/hooks/useApi'
+import { WishlistButton } from './WishlistButton'
 import type { Product } from '@/types'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -30,7 +31,7 @@ export function ProductCard({ product, className, priority = false }: Props) {
     return (
         <Card className={cn('group relative overflow-hidden transition-shadow hover:shadow-md', className)}>
             <Link href={`/shop/products/${product.slug}`} className="block">
-                <div className="aspect-square overflow-hidden bg-muted">
+                <div className="aspect-square overflow-hidden bg-muted relative">
                     {displayImage ? (
                         <Image src={displayImage} alt={product.primary_image?.alt_text || product.name}
                                width={400} height={400}
@@ -60,6 +61,11 @@ export function ProductCard({ product, className, priority = false }: Props) {
                     </div>
                 </CardContent>
             </Link>
+
+            {/* Action buttons */}
+            <div className="absolute top-3 right-3 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+                <WishlistButton productId={product.id} />
+            </div>
 
             {firstVariant && (
                 <Button size="icon"

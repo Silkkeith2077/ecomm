@@ -66,20 +66,20 @@ export function Navbar() {
     }
 
     return (
-        <header className="sticky top-0 z-40 bg-white/80 backdrop-blur-xl border-b border-border">
+        <header className="navbar-sticky navbar-bg navbar-border">
             <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
                 <div className="flex h-16 items-center justify-between gap-4">
 
                     {/* Logo */}
-                    <Link href="/" className="flex items-center gap-2 shrink-0">
-                        <div className="h-8 w-8 rounded-xl bg-gradient-to-br from-brand-500 to-brand-700 flex items-center justify-center">
+                    <Link href="/" className="navbar-logo">
+                        <div className="navbar-logo-icon">
                             <ShoppingBag className="h-4 w-4 text-white" />
                         </div>
-                        <span className="font-display text-xl font-semibold tracking-tight">ShopForge</span>
+                        <span className="navbar-brand-text">ShopForge</span>
                     </Link>
 
                     {/* Desktop nav */}
-                    <nav className="hidden md:flex items-center gap-1">
+                    <nav className="navbar-nav">
                         {NAV_LINKS.map(({ href, label }) => (
                             <Link key={href} href={href}>
                                 <Button variant={pathname.startsWith(href) ? 'secondary' : 'ghost'} size="sm">
@@ -90,9 +90,9 @@ export function Navbar() {
                     </nav>
 
                     {/* Search */}
-                    <div className={cn('hidden md:flex items-center transition-all duration-200', searchOpen ? 'flex-1 max-w-sm' : '')}>
+                    <div className={cn('navbar-search', searchOpen ? 'navbar-search-open' : '')}>
                         {searchOpen ? (
-                            <div className="flex items-center gap-2 w-full">
+                            <div className="navbar-search-input-wrapper">
                                 <Input autoFocus placeholder="Search products…" value={search}
                                        onChange={e => setSearch(e.target.value)} onKeyDown={handleSearch} />
                                 <Button variant="ghost" size="icon" onClick={() => { setSearchOpen(false); setSearch('') }}>
@@ -107,7 +107,7 @@ export function Navbar() {
                     </div>
 
                     {/* Right actions */}
-                    <div className="flex items-center gap-1">
+                    <div className="navbar-actions">
 
                         {/* Notifications */}
                         {mounted && isAuthenticated && (
@@ -131,10 +131,10 @@ export function Navbar() {
                                         )}
                                         {notifData?.results.slice(0, 8).map(n => (
                                             <button key={n.id} onClick={() => markRead.mutate(n.id)}
-                                                    className={cn('w-full text-left px-4 py-3 hover:bg-muted transition-colors border-b last:border-0',
-                                                        !n.is_read && 'bg-brand-50/40')}>
+                                                    className={cn('notification-item',
+                                                        !n.is_read && 'notification-unread')}>
                                                 <div className="flex gap-3">
-                                                    {!n.is_read && <span className="mt-1.5 h-2 w-2 shrink-0 rounded-full bg-brand-500" />}
+                                                    {!n.is_read && <span className="notification-indicator" />}
                                                     <div className={cn(!n.is_read ? '' : 'ml-5')}>
                                                         <p className="text-sm font-medium">{n.title}</p>
                                                         <p className="text-xs text-muted-foreground mt-0.5 line-clamp-2">{n.body}</p>
@@ -149,10 +149,10 @@ export function Navbar() {
                         )}
 
                         {/* Cart */}
-                        <Button variant="ghost" size="icon" className="relative" onClick={toggleCart} aria-label="Cart">
+                        <Button variant="ghost" size="icon" className="navbar-cart-btn" onClick={toggleCart} aria-label="Cart">
                             <ShoppingBag className="h-4 w-4" />
                             {mounted && itemCount > 0 && (
-                                <span className="absolute -top-0.5 -right-0.5 h-4 w-4 rounded-full bg-brand-600 text-white text-[10px] font-bold flex items-center justify-center">
+                                <span className="navbar-cart-badge">
                   {itemCount > 9 ? '9+' : itemCount}
                 </span>
                             )}
@@ -162,13 +162,13 @@ export function Navbar() {
                         {mounted && isAuthenticated ? (
                             <DropdownMenu>
                                 <DropdownMenuTrigger asChild>
-                                    <Button variant="ghost" className="gap-2 px-2">
-                                        <Avatar className="h-7 w-7 bg-blue-950">
-                                            <AvatarFallback className="bg-gradient-to-br from-brand-400 to-brand-600 text-white text-xs">
+                                    <Button variant="ghost" className="navbar-user-btn">
+                                        <Avatar className="navbar-user-avatar">
+                                            <AvatarFallback className="navbar-user-avatar-fallback">
                                                 {user?.first_name?.[0] ?? user?.email?.[0]?.toUpperCase() ?? 'U'}
                                             </AvatarFallback>
                                         </Avatar>
-                                        <span className="hidden lg:block max-w-[100px] truncate text-sm">
+                                        <span className="navbar-user-text">
                       {user?.first_name || user?.email?.split('@')[0]}
                     </span>
                                     </Button>
