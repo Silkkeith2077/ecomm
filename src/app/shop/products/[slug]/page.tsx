@@ -8,6 +8,9 @@ import Image from 'next/image'
 import { ShoppingBag, ChevronRight, Minus, Plus, Truck, RotateCcw, ShieldCheck, Play, Image as ImageIcon } from 'lucide-react'
 import { useProduct, useAddToCart } from '@/hooks/useApi'
 import { formatPrice, getVariantLabel, cn, mediaUrl } from '@/lib/utils'
+import { WishlistButton } from '@/components/shop/WishlistButton'
+import { ProductReviews } from '@/components/shop/ProductReviews'
+import { ProductRecommendations } from '@/components/shop/ProductRecommendations'
 import type { ProductVariant, ProductImage, ProductVideo, VariantImage, VariantVideo } from '@/types'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -240,13 +243,16 @@ export default function ProductDetailPage() {
                         </div>
                     </div>
 
-                    {/* Add to cart */}
-                    <Button size="lg" className="w-full"
-                            onClick={() => variant && addToCart.mutate({ variant: variant.id, quantity: qty })}
-                            disabled={!variant || addToCart.isPending}>
-                        <ShoppingBag className="h-5 w-5 mr-2" />
-                        {addToCart.isPending ? 'Adding…' : 'Add to Cart'}
-                    </Button>
+                    {/* Add to cart and wishlist */}
+                    <div className="flex gap-3">
+                        <Button size="lg" className="flex-1"
+                                onClick={() => variant && addToCart.mutate({ variant: variant.id, quantity: qty })}
+                                disabled={!variant || addToCart.isPending}>
+                            <ShoppingBag className="h-5 w-5 mr-2" />
+                            {addToCart.isPending ? 'Adding…' : 'Add to Cart'}
+                        </Button>
+                        <WishlistButton productId={product.id} size="lg" />
+                    </div>
 
                     {/* Variant attributes table */}
                     {variant && variant.attributes.length > 0 && (
@@ -275,6 +281,16 @@ export default function ProductDetailPage() {
                     </div>
                 </div>
             </div>
+
+            {/* Reviews Section */}
+            <ProductReviews
+                productId={product.id}
+                avgRating={4.5}
+                totalReviews={128}
+            />
+
+            {/* Recommendations Section */}
+            <ProductRecommendations currentProduct={product} />
         </div>
     )
 }

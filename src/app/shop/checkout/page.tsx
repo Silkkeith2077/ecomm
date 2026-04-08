@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
-import { Tag, Check, Loader2, CreditCard, AlertCircle } from 'lucide-react'
+import { Tag, Check, Loader2, CreditCard, AlertCircle, Shield, Truck } from 'lucide-react'
 import { toast } from 'sonner'
 import {
     useCart, useAddresses, useShippingMethods,
@@ -94,9 +94,49 @@ export default function CheckoutPage() {
         }
     }
 
+    const steps = [
+        { num: 1, label: 'Address', done: !!selectedAddress },
+        { num: 2, label: 'Shipping', done: !!selectedShipping && !!selectedAddress },
+        { num: 3, label: 'Payment', done: !!selectedShipping && !!selectedAddress },
+    ]
+
     return (
         <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8 py-10">
-            <h1 className="section-heading mb-8">Checkout</h1>
+            {/* Header */}
+            <div className="mb-12">
+                <h1 className="section-heading mb-6">Checkout</h1>
+
+                {/* Progress Steps */}
+                <div className="checkout-steps">
+                    {steps.map((step, idx) => (
+                        <div key={step.num} className="flex items-center">
+                            <div className={cn('checkout-step', step.done && 'checkout-step-done')}>
+                                {step.done ? <Check className="h-5 w-5" /> : step.num}
+                            </div>
+                            <span className="text-sm font-medium ml-2 hidden sm:inline">{step.label}</span>
+                            {idx < steps.length - 1 && (
+                                <div className={cn('checkout-step-line', step.done && 'checkout-step-line-done')} />
+                            )}
+                        </div>
+                    ))}
+                </div>
+
+                {/* Trust Signals */}
+                <div className="checkout-trust mt-6 flex flex-wrap gap-4">
+                    <div className="flex items-center gap-2 text-sm">
+                        <Shield className="h-4 w-4 text-green-600" />
+                        <span>Secure checkout</span>
+                    </div>
+                    <div className="flex items-center gap-2 text-sm">
+                        <Truck className="h-4 w-4 text-blue-600" />
+                        <span>Fast shipping</span>
+                    </div>
+                    <div className="flex items-center gap-2 text-sm">
+                        <Check className="h-4 w-4 text-purple-600" />
+                        <span>100% Satisfaction</span>
+                    </div>
+                </div>
+            </div>
 
             <div className="grid lg:grid-cols-5 gap-8">
                 {/* Left col */}

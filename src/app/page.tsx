@@ -6,6 +6,7 @@ import { CartDrawer } from '@/components/shop/CartDrawer'
 import { Footer } from '@/components/layout/Footer'
 import { FeaturedProducts } from '@/components/shop/FeaturedProducts'
 import { CategoryGrid } from '@/components/shop/CategoryGrid'
+import { Testimonials } from '@/components/shop/Testimonials'
 
 const PERKS = [
   { icon: Truck,       title: 'Free Shipping',    body: 'On all orders over $75.' },
@@ -122,6 +123,9 @@ export default function HomePage() {
             </div>
           </div>
         </section>
+
+        {/* Testimonials */}
+        <Testimonials />
       </main>
 
       <Footer />
